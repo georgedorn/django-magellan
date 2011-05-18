@@ -2,6 +2,7 @@ Django-intranet-search is a lightweight search engine with a built-in spider.
 
 Dependencies (and see pip-requirements.txt):
 
+Django, probably >= 1.2.
 Search index provided by Whoosh.
 Spider makes use of httplib2 and BeautifulSoup.
 
