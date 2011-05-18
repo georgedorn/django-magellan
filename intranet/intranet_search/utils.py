@@ -167,13 +167,34 @@ class SpiderThread(threading.Thread):
 
     def login(self):
             #log in
-            print "Logging in..."
+            print "Logging in at", self.profile.login_url, "..."
             http = httplib2.Http()
             headers = {'Content-type': 'application/x-www-form-urlencoded'}
             response, content = http.request(self.profile.login_url,
-                                                                        'POST',
-                                                                        headers=headers,
-                                                                        body=self.profile.login_details)
+                                             'POST',
+                                             headers=headers,
+                                             body=self.profile.login_details)
+            
+            status = int(response['status'])
+            
+            self.headers = {}
+
+            if status > 300 and status < 304:
+                # redirect
+                location = response['location']
+                print "HTTP", status, "redirect to", location
+
+                if 'set-cookie' in response.keys():
+                    self.cookie = response['set-cookie']
+                    self.headers['Cookie'] = self.cookie
+                response, content = http.request(location,
+                                                 'POST',
+                                                 headers=self.headers,
+                                                 body=self.profile.login_details)
+
+            # @todo: self.cookie should be a dict, which allows for overwriting
+            # of cookies if there was a redirect, but preserves cookies that
+            # weren't overwritten.  not a problem on tools, currently
             self.cookie = response['set-cookie']
             self.headers['Cookie'] = self.cookie
 
