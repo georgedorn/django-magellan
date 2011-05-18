@@ -6,6 +6,7 @@ import socket
 import threading
 import time
 import functools
+from django.utils.encoding import force_unicode
 
 from django.conf import settings
 
@@ -128,12 +129,6 @@ def is_on_site(source_url, url):
     
     return False
 
-def filter_urls(source, urls):
-    return [
-        relative_to_full(source, url) \
-            for url in urls \
-                if is_on_site(source, url)
-    ]
 
 #def fetch_url(url, timeout):
 #    f = urllib2.urlopen(url, timeout=timeout)
@@ -198,7 +193,7 @@ class SpiderThread(threading.Thread):
             except (UnfetchableURLException, OffsiteLinkException, AttributeError):
                 pass
             else:
-                if self.profile.logged_out_string and self.profile.logged_out_string in content:
+                if self.profile.logged_out_string and self.profile.logged_out_string in force_unicode(content, errors='ignore'):
                     self.login()
                     self.url_queue.put((url, source, depth))
                     return
@@ -247,9 +242,17 @@ class SpiderThread(threading.Thread):
         if headers['status'] == '200':
             if is_on_site(source_url, headers['content-location']):
                 urls = get_urls(content)
-                return headers, content, filter_urls(url, urls)
+                return headers, content, self.filter_urls(url, urls)
             else:
                 raise OffsiteLinkException
         
         return headers, content, []
-
+    
+    def filter_urls(self, source, urls):
+        ret = []
+        for url in urls:
+            if self.profile.links_ignore_regex and re.search(self.profile.links_ignore_regex, url):
+                continue
+            if is_on_site(source, url):
+                ret.append(relative_to_full(source, url))
+        return ret

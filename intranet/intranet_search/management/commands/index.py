@@ -36,7 +36,9 @@ def spider(profile, log=True):
     visited = {}
     scheduled = set()
     
-    threads = [SpiderThread(pending_urls, processed_responses, finished, profile) for x in range(getattr(settings, 'SPIDER_THREADS', 4))]
+    thread_count = profile.threads or getattr(settings, 'SPIDER_THREADS', 4)
+    
+    threads = [SpiderThread(pending_urls, processed_responses, finished, profile) for x in range(thread_count)]
     
     pending_urls.put((profile.base_url, '', depth))
     scheduled.add(profile.base_url)
@@ -55,7 +57,7 @@ def spider(profile, log=True):
                 processed_url = result_dict['url']
                 if log:
                     print "Adding page at url: %s, content length: %s to index" % (processed_url, len(result_dict['content']))
-                indexer.add_page(url=processed_url, title=result_dict['title'], content=strip_tags(result_dict['content']))
+                indexer.add_page(url=processed_url, title=result_dict['title'], content=strip_tags(result_dict['content']), site=profile.name)
                 if log:
                     print "Done"
                 # remove from the list of scheduled items
