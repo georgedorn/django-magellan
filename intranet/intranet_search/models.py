@@ -1,0 +1,88 @@
+from django.db import models
+from django.contrib import admin
+from whoosh import fields, index
+import os
+from django.conf import settings
+
+WHOOSH_SCHEMA = fields.Schema(title=fields.TEXT(stored=True),
+                                                               content = fields.TEXT,
+                                                               url=fields.ID(stored=True, unique=True)
+                                                               )
+
+class SpiderProfile(models.Model):
+    """
+    Represents a site to spider.
+    """
+    name = models.CharField(max_length=255)
+    base_url = models.CharField(max_length=255, help_text="Full URL to page to begin spidering")
+    depth = models.IntegerField(default=0, help_text="How many pages deep to follow links; 0 for infinite")
+    active = models.BooleanField(default=True)
+    timeout = models.IntegerField(default=30, help_text="Maximum time, per page, to wait for a response")
+    login_url = models.CharField(max_length=255, 
+                                                        help_text="URL to POST credentials to; not the login form itself, but the action of the form",
+                                                        blank=True)
+    login_details = models.CharField(max_length=255,
+                                                        help_text="urlencoded data to post to URL; e.g. name=foo&password=bar",
+                                                        blank=True)
+    logged_out_string = models.CharField(max_length=255,
+                                                        help_text="String to search for on response page to detect logged out status",
+                                                        blank=True)
+    threads = models.IntegerField(default=1, help_text="How many threads to use when spidering this site")
+    delay = models.IntegerField(default=0, help_text="How long to wait between requests, for each thread")    
+
+    def __unicode__(self):
+        return u"%s - starting at: %s" % (self.name, self.base_url)
+    
+
+class SpiderProfileAdmin(admin.ModelAdmin):
+    pass
+admin.site.register(SpiderProfile, SpiderProfileAdmin)
+
+
+class WhooshPageIndex(object):
+
+    def create_index(self):
+        path = settings.WHOOSH_INDEX
+        if not os.path.exists(path):
+            os.mkdir(path)
+        self.ix = index.create_in(settings.WHOOSH_INDEX, schema=WHOOSH_SCHEMA)
+
+    def open_index(self):
+        self.ix = index.open_dir(settings.WHOOSH_INDEX)
+        
+    def __init__(self, batch_size=20):
+        if os.path.exists(settings.WHOOSH_INDEX):
+            self.open_index()
+        else:
+            self.create_index()
+        self.writer = self.ix.writer()
+        self.batch_size = batch_size
+        self.batch_count = 0
+            
+    def add_page(self, url, title, content, commit=False):
+        """
+        Adds or updates a page in the index.  url is unique; calling add_page with the same url will replace the existing document.
+        """
+        self.writer.update_document(title=unicode(title), content=unicode(content), url=unicode(url))
+        self.batch_count += 1
+        if commit or self.batch_count >= self.batch_size:
+            print "Committing"
+            self.writer.commit()
+            self.writer = self.ix.writer()
+            self.batch_count = 0
+            
+
+            
+    
+        
+
+
+
+
+
+        
+
+
+    
+
+
