@@ -6,7 +6,7 @@ Django, probably >= 1.2.
 Search index provided by Whoosh.
 Spider makes use of httplib2 and BeautifulSoup.
 
-Some parts of spider where extracted from the django-spider project, forked from https://github.com/coleifer/django-spider.
+Some parts of spider were extracted from the django-spider project, forked from https://github.com/coleifer/django-spider.
 
 Installation:
 1. Create a virtualenv and activate it.
