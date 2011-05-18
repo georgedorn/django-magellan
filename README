@@ -1,0 +1,16 @@
+Django-intranet-search is a lightweight search engine with a built-in spider.
+
+Dependencies (and see pip-requirements.txt):
+
+Search index provided by Whoosh.
+Spider makes use of httplib2 and BeautifulSoup.
+
+Some parts of spider where extracted from the django-spider project, forked from https://github.com/coleifer/django-spider.
+
+Installation:
+1. Create a virtualenv and activate it.
+2. Install dependencies via:  pip -r pip-requirements.txt
+3. Create db via manage.py syncdb.
+4. Run the server, go into admin, configure one or more SearchProfile objects.
+5. Run the spider:  manage.py index
+6. Search results at /search
