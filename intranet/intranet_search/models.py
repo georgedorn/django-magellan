@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib import admin
 from whoosh import fields, index
-from whoosh.qparser import QueryParser
+from whoosh.qparser import MultifieldParser
 import os
 from django.conf import settings
 from django.utils.encoding import force_unicode
@@ -18,6 +18,7 @@ class SpiderProfile(models.Model):
     """
     name = models.CharField(max_length=255)
     base_url = models.CharField(max_length=255, help_text="Full URL to page to begin spidering")
+    domain = models.CharField(max_length=255, help_text="Substring (of domain or otherwise) to limit links followed")
     depth = models.IntegerField(default=0, help_text="How many pages deep to follow links; 0 for infinite")
     active = models.BooleanField(default=True)
     timeout = models.IntegerField(default=30, help_text="Maximum time, per page, to wait for a response")
@@ -54,13 +55,20 @@ class WhooshPageIndex(object):
 
     def open_index(self):
         self.ix = index.open_dir(settings.WHOOSH_INDEX)
+    
+    def commit(self, refresh_writer=True, *args, **kwargs):
+        if self.writer is not None:
+            self.writer.commit(*args, **kwargs)
+        self.batch_count = 0
+        if refresh_writer:
+            self.writer = self.ix.writer()
         
     def __init__(self, batch_size=20):
         if os.path.exists(settings.WHOOSH_INDEX):
             self.open_index()
         else:
             self.create_index()
-        self.writer = self.ix.writer()
+        self.writer = None
         self.batch_size = batch_size
         self.batch_count = 0
             
@@ -68,19 +76,23 @@ class WhooshPageIndex(object):
         """
         Adds or updates a page in the index.  url is unique; calling add_page with the same url will replace the existing document.
         """
+        if self.writer is None:
+                    self.writer = self.ix.writer()
         self.writer.update_document(title=unicode(title), content=unicode(content), url=unicode(url), site=unicode(site))
         self.batch_count += 1
         if commit or self.batch_count >= self.batch_size:
-            print "Committing"
-            self.writer.commit()
-            self.writer = self.ix.writer()
-            self.batch_count = 0
+            self.commit()
             
     def search(self, query):
-        
-        with self.ix.searcher() as searcher:
-            results = searcher.search(query)
-        return results
+        parser = MultifieldParser(fieldnames=('content','title'), 
+                                                    schema=self.ix.schema, 
+                                                    fieldboosts={'content':1,'title':2})
+        qry = parser.parse(query)
+        search = self.ix.searcher()
+#        with self.ix.searcher() as searcher:
+        return search.search(qry)
+            
+
         
             
 

@@ -1,0 +1,19 @@
+<form method="GET">
+	<input type="text" name="q" id="q" value="{{query}}">
+{% for profile in profiles %}
+<input type="checkbox" name="profile" value="{{profile.name}}" checked="checked"> {{profile.name}}
+
+{% endfor %}
+
+<input type='submit' value='Search' name='Search'>
+</form>
+
+
+Got {{num_results}} hits.
+
+
+<ul>
+    {% for hit in results %}
+    <li><a href="{{ hit.url }}">{{ hit.title }}</a></li>
+    {% endfor %}
+</ul>

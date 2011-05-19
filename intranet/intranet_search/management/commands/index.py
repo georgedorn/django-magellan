@@ -58,8 +58,6 @@ def spider(profile, log=True):
                 if log:
                     print "Adding page at url: %s, content length: %s to index" % (processed_url, len(result_dict['content']))
                 indexer.add_page(url=processed_url, title=result_dict['title'], content=strip_tags(result_dict['content']), site=profile.name)
-                if log:
-                    print "Done"
                 # remove from the list of scheduled items
                 scheduled.remove(processed_url)
                 
@@ -77,5 +75,6 @@ def spider(profile, log=True):
     except KeyboardInterrupt:
         finished.set()
         [t.join() for t in threads]
+        indexer.commit(optimize=True, refresh_writer=False)
                 
 

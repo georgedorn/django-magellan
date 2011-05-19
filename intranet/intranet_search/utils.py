@@ -94,7 +94,11 @@ def relative_to_full(example_url, url):
 def get_urls(content):
     # retrieve all link hrefs from html
     links = []
-    for link in BeautifulSoup(content, parseOnlyThese=SoupStrainer('a')):
+    try:
+        link_soup = BeautifulSoup(content, parseOnlyThese=SoupStrainer('a'))
+    except UnicodeEncodeError:
+        return links
+    for link in link_soup:
         if link.has_key('href'):
             links.append(link.get('href'))
     return links
@@ -106,22 +110,27 @@ def strip_subdomain(url):
     return url
 
 @memoize
-def is_on_site(source_url, url):
-    source_domain = get_domain(source_url)
-    if not source_domain:
-        raise ValueError('%s must contain "protocol://host"' % source_url)
-    
+def is_on_site(source_url, url, domain_substring=None):
     if url.startswith('/'):
         return True
-    
+
+    if domain_substring and domain_substring not in url:
+        return False
+
     if '://' not in url:
         if url.startswith('mailto') or url.startswith('javascript'):
             return False
         return True
+
+    source_domain = get_domain(source_url)
+    if not source_domain:
+        raise ValueError('%s must contain "protocol://host"' % source_url)
+    
     
     domain = get_domain(url)
     if domain and domain == source_domain:
         return True
+
     
     # try stripping out any subdomains
     if domain and strip_subdomain(domain) == strip_subdomain(source_domain):
@@ -237,6 +246,7 @@ class SpiderThread(threading.Thread):
                     response_status=int(headers['status']),
                     response_time=response_time,
                     content_length=int(headers['content-length']),
+                    headers=headers,
                 )
                 self.response_queue.put((results, urls, depth))
             
@@ -274,6 +284,6 @@ class SpiderThread(threading.Thread):
         for url in urls:
             if self.profile.links_ignore_regex and re.search(self.profile.links_ignore_regex, url):
                 continue
-            if is_on_site(source, url):
+            if is_on_site(source, url, self.profile.domain):
                 ret.append(relative_to_full(source, url))
         return ret
