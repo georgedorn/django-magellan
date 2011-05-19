@@ -6,6 +6,7 @@ import socket
 import threading
 import time
 import functools
+import cookielib
 from django.utils.encoding import force_unicode
 
 from django.conf import settings
@@ -163,6 +164,10 @@ class SpiderThread(threading.Thread):
         self.timeout = spider_profile.timeout
         self.profile = spider_profile
         self.headers = {}
+        self.cookiejar = cookielib.CookieJar()
+        self.opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.cookiejar))
+        #urllib2.install_opener(self.opener)
+
         self.working = False
     
     def run(self):
@@ -178,35 +183,10 @@ class SpiderThread(threading.Thread):
     def login(self):
             #log in
             print "Logging in at", self.profile.login_url, "..."
-            http = httplib2.Http()
-            headers = {'Content-type': 'application/x-www-form-urlencoded'}
-            response, content = http.request(self.profile.login_url,
-                                             'POST',
-                                             headers=headers,
-                                             body=self.profile.login_details)
-            
-            status = int(response['status'])
-            
-            self.headers = {}
-
-            if status > 300 and status < 304:
-                # redirect
-                location = response['location']
-                print "HTTP", status, "redirect to", location
-
-                if 'set-cookie' in response.keys():
-                    self.cookie = response['set-cookie']
-                    self.headers['Cookie'] = self.cookie
-                response, content = http.request(location,
-                                                 'POST',
-                                                 headers=self.headers,
-                                                 body=self.profile.login_details)
-
-            # @todo: self.cookie should be a dict, which allows for overwriting
-            # of cookies if there was a redirect, but preserves cookies that
-            # weren't overwritten.  not a problem on tools, currently
-            self.cookie = response['set-cookie']
-            self.headers['Cookie'] = self.cookie
+            request = urllib2.Request(url=self.profile.login_url,
+                                      data=self.profile.login_details,
+                                      headers={})
+            response = self.opener.open(request)
 
     
     def process_queue(self):
@@ -232,10 +212,12 @@ class SpiderThread(threading.Thread):
                     self.url_queue.put((url, source, depth))
                     self.working = False
                     return
-                
 
                 if 'content-length' not in headers:
                     headers['content-length'] = len(content)
+                if 'status' not in headers:
+                    headers['status'] = '200'   # ugh. how to get status from urllib2 in crawl()?
+
                 soup = BeautifulSoup(content)
                 try:
                     title = soup.html.head.title.string
@@ -258,16 +240,23 @@ class SpiderThread(threading.Thread):
             self.url_queue.task_done()
             
             
-            
     def fetch_url(self, url, timeout):
-        sock = httplib2.Http(timeout=timeout)
-        return sock.request(url, headers=self.headers)
+        request = urllib2.Request(url=url,
+                                  headers=self.headers)
+        return self.opener.open(request, timeout=timeout)
+
     
     def crawl(self, source_url, url, timeout, log=True):
         try:
             if log:
                 print "Going to url: %s" % url
-            headers, content = self.fetch_url(url, timeout)
+            response = self.fetch_url(url, timeout)
+            headers_raw = response.info().headers
+            headers = {}
+            for header in headers_raw:
+                (k, s, v) = header.partition(":")
+                headers[k] = v.strip()
+            content = response.read()
         except socket.error:
             raise UnfetchableURLException
         except urllib2.URLError:
@@ -275,12 +264,11 @@ class SpiderThread(threading.Thread):
         except httplib2.ServerNotFoundError:
             raise UnfetchableURLException
         
-        if headers['status'] == '200':
-            if is_on_site(source_url, headers['content-location']):
-                urls = get_urls(content)
-                return headers, content, self.filter_urls(url, urls)
-            else:
-                raise OffsiteLinkException
+        if is_on_site(source_url, response.geturl()):
+            urls = get_urls(content)
+            return headers, content, self.filter_urls(url, urls)
+        else:
+            raise OffsiteLinkException
         
         return headers, content, []
     
