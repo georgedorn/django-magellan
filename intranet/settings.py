@@ -93,8 +93,8 @@ SECRET_KEY = '8(x^9+w479=3!3^+1nr%-pj5v4uov8ep1k*etm7^vc-*hie!$^'
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
+    'django.template.loaders.filesystem.Loader',
 #     'django.template.loaders.eggs.Loader',
 )
 
@@ -163,3 +163,15 @@ LOGGING = {
         },
     }
 }
+
+try:
+    from settings_local import *
+    try:
+        INSTALLED_APPS = list(INSTALLED_APPS)
+        INSTALLED_APPS.extend(EXTRA_INSTALLED_APPS)
+    except:
+        pass
+except ImportError:
+    pass
+
+
