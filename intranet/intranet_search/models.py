@@ -18,7 +18,7 @@ class SpiderProfile(models.Model):
     """
     name = models.CharField(max_length=255)
     base_url = models.CharField(max_length=255, help_text="Full URL to page to begin spidering")
-    domain = models.CharField(max_length=255, help_text="Substring (of domain or otherwise) to limit links followed")
+    domain = models.CharField(max_length=255, help_text="Substring (of domain or otherwise) to limit links followed", blank=True)
     depth = models.IntegerField(default=0, help_text="How many pages deep to follow links; 0 for infinite")
     active = models.BooleanField(default=True)
     timeout = models.IntegerField(default=30, help_text="Maximum time, per page, to wait for a response")
