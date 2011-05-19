@@ -14,8 +14,10 @@ def search(request):
         query = query.replace('+', ' AND ').replace(' -', ' NOT ') #this is fairly lame
         results = page_index.search(query)
         vars['query'] = query
-        vars['results'] = results
+        vars['results'] = [ dict(title=r['title'], highlight=r.highlights('content'), url=r['url']) for r in results]
         vars['num_results'] =len(results)
+        
+        
         
     return render(request, 'search_results.html', vars)
 

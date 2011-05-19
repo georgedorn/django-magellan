@@ -14,6 +14,6 @@ Got {{num_results}} hits.
 
 <ul>
     {% for hit in results %}
-    <li><a href="{{ hit.url }}">{{ hit.title }}</a></li>
+    <li><a href="{{ hit.url }}">{{ hit.title }}</a><br>{% autoescape off %}{{hit.highlight}}{% endautoescape %}</li>
     {% endfor %}
 </ul>

@@ -7,7 +7,7 @@ from django.conf import settings
 from django.utils.encoding import force_unicode
 
 WHOOSH_SCHEMA = fields.Schema(title=fields.TEXT(stored=True),
-                                                               content = fields.TEXT,
+                                                               content = fields.TEXT(stored=True), #need to store in order to handle highlights
                                                                url=fields.ID(stored=True, unique=True),
                                                                site=fields.ID(stored=True, unique=False )
                                                                )
