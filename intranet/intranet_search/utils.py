@@ -162,18 +162,18 @@ class SpiderThread(threading.Thread):
         self.source_url = spider_profile.base_url
         self.timeout = spider_profile.timeout
         self.profile = spider_profile
-        self.logged_in = False
         self.headers = {}
         self.working = False
     
     def run(self):
-        if self.profile.login_url and not self.logged_in:
+        if self.profile.login_url:
             self.login()
         
         while not self.finish_event.is_set():
             self.process_queue()
             if self.profile.delay:
                 time.sleep(self.profile.delay)
+
 
     def login(self):
             #log in
@@ -215,6 +215,7 @@ class SpiderThread(threading.Thread):
             url, source, depth = self.url_queue.get_nowait()
         except Queue.Empty:
             self.working = False
+            time.sleep(1)
         except KeyboardInterrupt:
             self.working = False
             return

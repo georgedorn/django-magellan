@@ -55,8 +55,11 @@ def spider(profile, log=True):
                 done = True
                 for t in threads:
                     if t.working:
+                        print "Thread %s is still working, not exiting" % t
                         done = False
                 if done:
+                    print "All threads done working"
+                    finished.set()
                     break
             else:
                 # save the result
@@ -77,12 +80,14 @@ def spider(profile, log=True):
                             scheduled.add(url)
                             pending_urls.put((url, processed_url, depth - 1))
                 
-        return visited        
     except KeyboardInterrupt:
         pass
 
+    print "Cleaning up..."
     finished.set()
     [t.join() for t in threads]
+    print "Optimizing index..."
     indexer.commit(optimize=True, refresh_writer=False)
-                
+
+    return visited
 
