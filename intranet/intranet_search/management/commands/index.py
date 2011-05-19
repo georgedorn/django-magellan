@@ -24,8 +24,6 @@ class Command(BaseCommand):
             spider(profile)
 
 
-
-
 def spider(profile, log=True):
     depth = profile.depth
     indexer = WhooshPageIndex()
@@ -43,6 +41,8 @@ def spider(profile, log=True):
     pending_urls.put((profile.base_url, '', depth))
     scheduled.add(profile.base_url)
     
+    extractor = profile.get_extractor()
+
     [t.start() for t in threads]
 
     try:
@@ -66,7 +66,13 @@ def spider(profile, log=True):
                 processed_url = result_dict['url']
                 if log:
                     print "Adding page at url: %s, content length: %s to index" % (processed_url, len(result_dict['content']))
-                indexer.add_page(url=processed_url, title=result_dict['title'], content=strip_tags(result_dict['content']), site=profile.name)
+                
+                raw_content = result_dict['content']
+                title = extractor.get_title(raw_content)
+                content = extractor.get_content(raw_content)
+                
+                
+                indexer.add_page(url=processed_url, title=title, content=content, site=profile.name)
                 # remove from the list of scheduled items
                 scheduled.remove(processed_url)
                 

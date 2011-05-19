@@ -217,17 +217,10 @@ class SpiderThread(threading.Thread):
                     headers['content-length'] = len(content)
                 if 'status' not in headers:
                     headers['status'] = '200'   # ugh. how to get status from urllib2 in crawl()?
-
-                soup = BeautifulSoup(content)
-                try:
-                    title = soup.html.head.title.string
-                except:
-                    title = "No Title"
                     
                 content = STORE_CONTENT and ascii_hammer(content) or ''
                 results = dict(
                     url=url,
-                    title=title,
                     source_url=source,
                     content=content,
                     response_status=int(headers['status']),

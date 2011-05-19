@@ -5,6 +5,10 @@ from whoosh.qparser import MultifieldParser
 import os
 from django.conf import settings
 from django.utils.encoding import force_unicode
+from django.utils.html import strip_tags
+from BeautifulSoup import BeautifulSoup
+from django.utils import importlib
+
 
 WHOOSH_SCHEMA = fields.Schema(title=fields.TEXT(stored=True),
                                                                content = fields.TEXT(stored=True), #need to store in order to handle highlights
@@ -36,13 +40,47 @@ class SpiderProfile(models.Model):
     links_ignore_regex = models.CharField(max_length=255,
                                                         help_text="Links matching this regex will not be followed",
                                                         blank=True)
-
+    extraction_plugin = models.CharField(max_length=255,
+                                                        help_text="Module name containing an implementation of BaseExtractor with same name as module.",
+                                                        blank=True)
+    
+    def get_extractor(self):
+        """
+        Dynamically imports a the module+class specified by extraction_plugin and returns an instance of it.
+        Or returns the BaseExtractor, if none is set.
+        """
+        if not self.extraction_plugin:
+            return BaseExtractor()
+        
+        module_name = "intranet_search.plugins.%s" % self.extraction_plugin
+        module = importlib.import_module(name=module_name)
+        cls = getattr(module, self.extraction_plugin)
+        return cls()
+        
     def __unicode__(self):
         return u"%s - starting at: %s" % (self.name, self.base_url)
 
 class SpiderProfileAdmin(admin.ModelAdmin):
     pass
 admin.site.register(SpiderProfile, SpiderProfileAdmin)
+
+class BaseExtractor(object):
+    """
+    Used to extract titles, content and urls from pages crawled in this profile.
+    """
+    
+    def get_title(self, content):
+        soup = BeautifulSoup(content)
+        try:
+            title = soup.html.head.title.string
+        except:
+            title = "No Title"
+        return title
+    
+    def get_content(self, content):
+        return strip_tags(content)
+    
+    
 
 
 class WhooshPageIndex(object):
