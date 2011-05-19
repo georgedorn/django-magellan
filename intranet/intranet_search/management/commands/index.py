@@ -51,7 +51,13 @@ def spider(profile, log=True):
                 # pull an item from the response queue
                 result_dict, urls, depth = processed_responses.get(timeout=profile.timeout)
             except Queue.Empty:
-                pass
+                #check to see if any of the workers are still doing anything
+                done = True
+                for t in threads:
+                    if t.working:
+                        done = False
+                if done:
+                    break
             else:
                 # save the result
                 processed_url = result_dict['url']
@@ -73,8 +79,10 @@ def spider(profile, log=True):
                 
         return visited        
     except KeyboardInterrupt:
-        finished.set()
-        [t.join() for t in threads]
-        indexer.commit(optimize=True, refresh_writer=False)
+        pass
+
+    finished.set()
+    [t.join() for t in threads]
+    indexer.commit(optimize=True, refresh_writer=False)
                 
 

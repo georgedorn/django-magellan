@@ -164,6 +164,7 @@ class SpiderThread(threading.Thread):
         self.profile = spider_profile
         self.logged_in = False
         self.headers = {}
+        self.working = False
     
     def run(self):
         if self.profile.login_url and not self.logged_in:
@@ -210,10 +211,12 @@ class SpiderThread(threading.Thread):
     
     def process_queue(self):
         try:
-            url, source, depth = self.url_queue.get(timeout=self.timeout)
+            self.working = True
+            url, source, depth = self.url_queue.get_nowait()
         except Queue.Empty:
-            pass
+            self.working = False
         except KeyboardInterrupt:
+            self.working = False
             return
         else:
             try:
@@ -226,6 +229,7 @@ class SpiderThread(threading.Thread):
                 if self.profile.logged_out_string and self.profile.logged_out_string in force_unicode(content, errors='ignore'):
                     self.login()
                     self.url_queue.put((url, source, depth))
+                    self.working = False
                     return
                 
 
