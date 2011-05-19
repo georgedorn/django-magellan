@@ -1,0 +1,4 @@
+intranet/whoosh_site_index
+*.pyc
+intranet_db.
+.tmp*~
