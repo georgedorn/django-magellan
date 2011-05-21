@@ -218,7 +218,9 @@ class SpiderThread(threading.Thread):
                 if 'status' not in headers:
                     headers['status'] = '200'   # ugh. how to get status from urllib2 in crawl()?
                     
-                content = STORE_CONTENT and ascii_hammer(content) or ''
+                if not STORE_CONTENT:
+                    content = ''
+                    
                 results = dict(
                     url=url,
                     source_url=source,

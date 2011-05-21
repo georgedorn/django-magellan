@@ -41,7 +41,7 @@ def spider(profile, log=True):
     pending_urls.put((profile.base_url, '', depth))
     scheduled.add(profile.base_url)
     
-    extractor = profile.get_extractor()
+    extractor = profile.get_extractor_class()
 
     [t.start() for t in threads]
 
@@ -68,11 +68,13 @@ def spider(profile, log=True):
                     print "Adding page at url: %s, content length: %s to index" % (processed_url, len(result_dict['content']))
                 
                 raw_content = result_dict['content']
-                title = extractor.get_title(raw_content)
-                content = extractor.get_content(raw_content)
+                e = extractor(raw_content)
+                title = e.get_title()
+                content = e.get_content()
+                headings = e.get_headings()
                 
                 
-                indexer.add_page(url=processed_url, title=title, content=content, site=profile.name)
+                indexer.add_page(url=processed_url, title=title, content=content, site=profile.name, headings=headings)
                 # remove from the list of scheduled items
                 scheduled.remove(processed_url)
                 
@@ -89,11 +91,13 @@ def spider(profile, log=True):
     except KeyboardInterrupt:
         pass
 
-    print "Cleaning up..."
-    finished.set()
-    [t.join() for t in threads]
-    print "Optimizing index..."
-    indexer.commit(optimize=True, refresh_writer=False)
-
-    return visited
+    finally:
+    
+        print "Cleaning up..."
+        finished.set()
+        [t.join() for t in threads]
+        print "Optimizing index..."
+        indexer.commit(optimize=True)
+    
+        return visited
 

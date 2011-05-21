@@ -135,8 +135,11 @@ INSTALLED_APPS = (
     # 'django.contrib.admindocs',
 )
 
-WHOOSH_INDEX = os.path.join(my_path, 'whoosh_site_index')
+MAGELLAN_PLUGINS_MODULE_PATH = "intranet_search.plugins"
+MAGELLAN_WHOOSH_INDEX = os.path.join(my_path, 'whoosh_site_index')
+MAGELLAN_WHOOSH_MAX_MEMORY = 256 #memory to limit the whoosh indexer to use while spidering.  bigger = faster
 SPIDER_COOKIE_JAR = os.path.join(my_path, 'cookies')
+
 
 
 
