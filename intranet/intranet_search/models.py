@@ -8,13 +8,16 @@ from django.utils.encoding import force_unicode
 from django.utils.html import strip_tags
 from BeautifulSoup import BeautifulSoup
 from django.utils import importlib
+import hashlib
+from collections import defaultdict
 
 
 WHOOSH_SCHEMA = fields.Schema(title=fields.TEXT(stored=True),
                                                                content = fields.TEXT(stored=True), #need to store in order to handle highlights
                                                                url=fields.ID(stored=True, unique=True),
+                                                               content_hash=fields.ID(unique=True),
                                                                site=fields.ID(stored=True, unique=False ),
-                                                               headings=fields.TEXT(), #stores extra headings/keywords to weight these more heavily
+                                                               headings=fields.TEXT(), #index on extra headings/keywords to weight these more heavily
                                                                )
 
 class SpiderProfile(models.Model):
@@ -86,16 +89,18 @@ class BaseExtractor(object):
     
     def get_headings(self):
         headings = []
-        headings.extend( [h.string for h in self.soup.findAll('h1')])
-        headings.extend( [h.string for h in self.soup.findAll('h2')])
-        headings.extend( [h.string for h in self.soup.findAll('h3')])
+        for tag in ('h1','h2','h3'):
+            hs = [h.string for h in self.soup.findAll(tag)]
+            if hs:
+                headings.extend(hs)
         return ' '.join(headings)
     
 
 
 class WhooshPageIndex(object):
     
-    _writer = None
+    _writer = None    
+    _unique_data = defaultdict(list) #holds non-committed unique data to detect collisions
 
     def create_index(self):
         path = settings.MAGELLAN_WHOOSH_INDEX
@@ -109,6 +114,7 @@ class WhooshPageIndex(object):
     def commit(self, *args, **kwargs):
         self.writer.commit(*args, **kwargs)
         self.batch_count = 0
+        self._unique_data = defaultdict(list)
     
     @property
     def writer(self):
@@ -130,7 +136,22 @@ class WhooshPageIndex(object):
         """
         Adds or updates a page in the index.  url is unique; calling add_page with the same url will replace the existing document.
         """
-        self.writer.update_document(title=unicode(title), content=unicode(content), url=unicode(url), site=unicode(site), headings=unicode(headings))
+        content = unicode(content)
+        hash = "%s:%s" % (site, hashlib.sha1(content.encode('utf-8')).hexdigest())
+        
+        if hash in self._unique_data['hash'] or url in self._unique_data['url']:
+            print "Duplicate data in batch detected"
+            self.commit()
+        
+        self._unique_data['hash'].append(hash)
+        self._unique_data['url'].append(url)
+        
+        self.writer.update_document(title=force_unicode(title), 
+                                                          content=force_unicode(content), 
+                                                          url=force_unicode(url), 
+                                                          site=force_unicode(site), 
+                                                          content_hash=force_unicode(hash),
+                                                          headings=force_unicode(headings))
         self.batch_count += 1
         if commit or self.batch_count >= self.batch_size:
             self.commit()
