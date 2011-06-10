@@ -44,7 +44,7 @@ def spider(profile, log=True):
     extractor = profile.get_extractor_class()
 
     [t.start() for t in threads]
-
+    processed_url = None
     try:
         while 1:
             try:
@@ -90,6 +90,10 @@ def spider(profile, log=True):
                 
     except KeyboardInterrupt:
         pass
+    except Exception, e:
+        print "Got an exception while indexing page: %s\nWill exit." % processed_url
+        print "Headings: %s" % headings
+        raise
 
     finally:
     
@@ -99,5 +103,5 @@ def spider(profile, log=True):
         print "Optimizing index..."
         indexer.commit(optimize=True)
     
-        return visited
+    return visited
 
