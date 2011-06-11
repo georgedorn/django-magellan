@@ -1,17 +1,31 @@
-Django-intranet-search is a lightweight search engine with a built-in spider.
+Magellan is a lightweight search engine with a built-in spider.
 
-Dependencies (and see pip-requirements.txt):
+Dependencies (handled via setup.py):
 
 Django, probably >= 1.2.
-Search index provided by Whoosh.
+Whoosh.
 Spider makes use of httplib2 and BeautifulSoup.
+Chardet is not required but will improve results greatly.
 
 Some parts of spider were extracted from the django-spider project, forked from https://github.com/coleifer/django-spider.
 
 Installation:
-1. Create a virtualenv and activate it.
-2. Install dependencies via:  pip -r pip-requirements.txt
-3. Create db via manage.py syncdb.
-4. Run the server, go into admin, configure one or more SearchProfile objects.
-5. Run the spider:  manage.py index
-6. Search results at /search
+1. Create your search engine project in django.
+2. Install magellan via your favorite package installer.
+3. Add magellan to your INSTALLED_APPS.
+4. Configure your database (sqlite will work fine, if desired.)
+5. In settings.py, configure:
+    MAGELLAN_PLUGINS_MODULE_PATH = "searchengine.plugins" 
+    - Optional, if you want to provide site-specific content extractors.
+    MAGELLAN_WHOOSH_INDEX = os.path.join(my_path, 'whoosh_site_index')
+    - Where to store the Whoosh files.
+    MAGELLAN_WHOOSH_MAX_MEMORY = 256 #memory to limit the whoosh indexer to use while spidering.  bigger = faster
+    - Maximum memory to use for Whoosh.  Bigger is better.
+    SPIDER_COOKIE_JAR = os.path.join(my_path, 'cookies')
+    - Where to store auth cookies when spidering. 
+6. Run your django server (manage.py runserver or however you deploy this)
+7. In django's admin, configure one or more SearchProfile objects.
+8. Invoke the spider via manage.py index (which can take the name of a profile as an argument)
+9. Hook up the magellan search result view in your urls.py. (This will become an include eventually.)
+         url(r'^search/', 'magellan.views.search'),
+
