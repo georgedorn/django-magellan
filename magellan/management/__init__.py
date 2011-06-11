@@ -1,6 +1,6 @@
 from django.db.models.signals import post_syncdb
 from django.db.models import get_models
-import intranet_search.models
+import magellan.models
 
 
 
@@ -14,7 +14,7 @@ def fix_profile_key_field(sender, **kwargs):
     if 'sqlite' not in connection.settings_dict['ENGINE']:
         return
     cursor = connection.cursor()
-    table_name = "intranet_search_spiderprofile"
+    table_name = magellan.models.SpiderProfile._meta.db_table
     
     res = cursor.execute("select sql from sqlite_master where name = '%s'" % table_name)
     schema = res.fetchone()[0]
@@ -34,4 +34,4 @@ def fix_profile_key_field(sender, **kwargs):
     
     
     
-post_syncdb.connect(fix_profile_key_field, sender=intranet_search.models)
+post_syncdb.connect(fix_profile_key_field, sender=magellan.models)
