@@ -1,15 +1,20 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.utils.html import strip_tags
-from intranet_search.models import WhooshPageIndex, SpiderProfile
+from magellan.models import WhooshPageIndex, SpiderProfile
 import Queue
 import urllib, urllib2
 import BeautifulSoup
 import threading
 import time
-from intranet_search.utils import UnfetchableURLException, OffsiteLinkException,\
+from magellan.utils import UnfetchableURLException, OffsiteLinkException,\
     SpiderThread
 
 from django.conf import settings
+
+#there's probably a better place for this, but cPickle hits the default 1000 limit when whoosh is trying to append items
+import sys
+sys.setrecursionlimit(10000)
+
 
 
 class Command(BaseCommand):
@@ -68,7 +73,9 @@ def spider(profile, log=True):
                     print "Adding page at url: %s, content length: %s to index" % (processed_url, len(result_dict['content']))
                 
                 raw_content = result_dict['content']
-                e = extractor(raw_content)
+                unicode_content = BeautifulSoup.UnicodeDammit(raw_content, isHTML=True).unicode
+                
+                e = extractor(unicode_content)
                 title = e.get_title()
                 content = e.get_content()
                 headings = e.get_headings()
