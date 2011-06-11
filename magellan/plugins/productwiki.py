@@ -1,4 +1,4 @@
-from intranet_search.models import BaseExtractor
+from magellan.models import BaseExtractor
 from django.utils.html import strip_tags
 from django.utils.encoding import force_unicode
 

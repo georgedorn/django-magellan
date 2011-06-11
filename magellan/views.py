@@ -2,7 +2,7 @@ from django import forms
 from django.conf import settings
 from whoosh import index, store, fields
 from django.shortcuts import render
-from intranet_search.models import WhooshPageIndex, SpiderProfile
+from magellan.models import WhooshPageIndex, SpiderProfile
 
 def search(request):
     profiles = SpiderProfile.objects.filter(active=True)
