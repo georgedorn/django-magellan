@@ -8,7 +8,6 @@ setup(
                         'BeautifulSoup>=3.2.0',
                         'Django>=1.3',
                         'Whoosh>=1.8.2',
-                        'httplib2>=0.6.0',
                         'chardet>=1.0.1',
                         ],
  
