@@ -18,7 +18,7 @@ def fix_profile_key_field(sender, **kwargs):
     
     res = cursor.execute("select sql from sqlite_master where name = '%s'" % table_name)
     schema = res.fetchone()[0]
-    if 'AUTOINCREMENT' in schema:
+    if 'PRIMARY KEY' in schema:
         return #already done
     
     #drop the old table
