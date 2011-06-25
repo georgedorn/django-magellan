@@ -5,14 +5,10 @@ from whoosh.qparser import MultifieldParser
 import os
 from django.conf import settings
 from django.utils.encoding import force_unicode
-from django.utils.html import strip_tags
-from BeautifulSoup import BeautifulSoup
 from django.utils import importlib
 import hashlib
-import re
 from collections import defaultdict
-from magellan.utils import ascii_hammer
-
+from extractor import BaseExtractor
 
 WHOOSH_SCHEMA = fields.Schema(title=fields.TEXT(stored=True),
                                                                content = fields.TEXT(stored=True), #need to store in order to handle highlights
@@ -58,7 +54,7 @@ class SpiderProfile(models.Model):
         if not self.extraction_plugin:
             return BaseExtractor
         
-        module_name = "%s.%s" % (settings.MAGELLAN_PLUGINS_MODULE_PATH, self.extraction_plugin)
+        module_name = settings.MAGELLAN_PLUGINS_MODULE_PATH
         module = importlib.import_module(name=module_name)
         cls = getattr(module, self.extraction_plugin)
         return cls
@@ -70,62 +66,9 @@ class SpiderProfileAdmin(admin.ModelAdmin):
     pass
 admin.site.register(SpiderProfile, SpiderProfileAdmin)
 
-class BaseExtractor(object):
-    """
-    Used to extract titles, content and urls from pages crawled in this profile.
-    """
 
-    def __init__(self, content):
-        self.content = content
-        try:
-            self.soup = BeautifulSoup(content)
-            self._strip_script()
-            self._strip_style()
-        except UnicodeEncodeError:
-            self.soup = None
-            
-    
-    def get_title(self):
-        try:
-            title = self.soup.html.head.title.string
-        except:
-            title = "No Title"
-        return title or "No Title"
-    
-    def get_content(self):
-        if self.soup:
-            content = strip_tags(self.soup.text)
-        else:
-            #this is incredibly brutal.  
-            #we should try much harder to handle crazy weird content (e.g. PDFs)
-            #before descending to these depths of barbarism
-            content = strip_tags(ascii_hammer(self.content))
 
-        return self._strip_whitespace(content)
-    
-    def get_headings(self):
-        if not self.soup:
-            return ''
-        headings = []
-        for tag in ('h1','h2','h3'):
-            hs = [h.string for h in self.soup.findAll(tag) if h.string is not None]
-            headings.extend(hs)
-        return ' '.join(headings)
-    
-    def _strip_script(self):
-        to_extract = self.soup.findAll('script')
-        for item in to_extract:
-            item.extract()
-
-    def _strip_style(self):
-        to_extract = self.soup.findAll('style')
-        for item in to_extract:
-            item.extract()
-
-    def _strip_whitespace(self, content):
-        return re.sub('\s+', ' ', content)
         
-
 class WhooshPageIndex(object):
     
     _writer = None    
