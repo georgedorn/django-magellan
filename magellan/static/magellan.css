@@ -88,6 +88,11 @@ body {
     background: #fff9ad;
 }
 
+.match {
+    font-weight: bold;
+    background: #fff9ad;
+}
+
 .result_link {
     font-size: small;
     font-style: italic;

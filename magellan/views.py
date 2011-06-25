@@ -16,7 +16,9 @@ def search(request):
         vars['query'] = query
         vars['results'] = [ dict(title=r['title'], highlight=r.highlights('content'), url=r['url']) for r in results]
         vars['num_results'] =len(results)
-        
-    return render(request, 'search_results.html', vars)
+        template = 'search_results.html'
+    else:
+        template = 'index.html'
+    return render(request, template, vars)
 
 
