@@ -1,0 +1,36 @@
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <title>Magellan :: Search</title>
+    <link href="magellan.css" rel="stylesheet" type="text/css" />
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#search_form .text_box').focus();
+        });
+    </script>
+  </head>
+  <body>
+    <div id="search_container" class="logo_bg">
+        <div id="search_ui">
+            <form action="" method="get" name="search_form" class="search_form">
+                <input class="text_box" name="q" type="text" value="{{query}}" />
+                <input class="button" type="Submit" value="Go >" />
+                <ul class="search_profiles">
+                    {% for profile in profiles %}
+                    <li><input type="checkbox" name="profile" value="{{profile.name}}" checked="checked"> {{profile.name}}</li>
+                    {% endfor %}
+                </ul>
+            </form>
+        </div> <!-- search_ui -->
+    </div> <!-- search_container -->
+    
+    <ul id="tech_bugs">
+        <li><a href="https://bitbucket.org/mchaput/whoosh/wiki/Home"><img alt="Whoosh!" src="whoosh.png" width="80" height="28" /></a></li>
+        <li><a href="http://www.djangoproject.com/"><img alt="Django" src="django.png" width="80" height="28" /></a></li>
+        <li><a href="http://www.python.org/"><img alt="Python" src="python.png" width="80" height="25" /></a></li>
+    </ul> <!-- tech_bugs -->
+  </body>
+</html>

@@ -1,0 +1,110 @@
+body {
+    background: #fff url('kavi-internal.png') no-repeat fixed top left;
+    color: #000;
+    font-family: Helvetica, Arial, Verdana, sans-serif;
+}
+
+.logo_bg {
+    background: #fff url('magellan-bg.png') no-repeat top;
+    width: 400px;
+    min-height: 140px;
+}
+
+#search_container {
+    margin: 120px auto 0 auto;
+}
+
+#results_search_container {
+    margin: 0 auto;
+}
+
+#search_ui {
+    position: relative;
+    top: 111px;
+    left: 52px;
+}
+
+#search_ui_bottom {
+    margin: 1em 12em 2em 12em;
+    text-align: center;
+}
+
+.search_form .text_box {
+    border: 1px solid black;
+    font-size: 20px;
+    width: 265px;
+    height: 26px;
+}
+
+.search_form .button {
+    position: relative;
+    top: -2px;
+    font-size: 20px;
+}
+
+.search_form ul.search_profiles {
+    display: inline;
+    list-style-type: none;	
+}
+
+#tech_bugs {
+    position: fixed;
+    right: 5px;
+    bottom: 0px;
+    list-style-type: none;
+}
+
+#tech_bugs img {
+    margin: 0 0 2px 0;
+    border: none;
+}
+
+.results_stats {
+    margin: 3em 12em 1em 12em;
+    font-style: italic;
+    color: #666;
+}
+
+#results_list {
+    margin: 1em 12em 3em 12em;
+}
+
+#results_list li {
+    margin-bottom: 2em;
+}
+
+#results_list p {
+    margin-top: 0.4em;
+    margin-bottom: 0.4em;
+}
+
+.result_title {
+    font-size: larger;
+    font-weight: bold;
+}
+
+.search_term {
+    font-weight: bold;
+    background: #fff9ad;
+}
+
+.result_link {
+    font-size: small;
+    font-style: italic;
+    color: #666;
+}
+
+.result_link a {
+    color: #c48c30;
+}
+
+.pagination {
+    font-size: larger;
+    text-align: center;    
+}
+
+.pagination li {
+    list-style-type: none;
+    display: inline;
+    margin-right: 0.8em;
+}
