@@ -13,7 +13,7 @@ from django.conf import settings
 
 #there's probably a better place for this, but cPickle hits the default 1000 limit when whoosh is trying to append items
 import sys
-sys.setrecursionlimit(10000)
+sys.setrecursionlimit(100000)
 
 
 
@@ -100,6 +100,7 @@ def spider(profile, log=True):
     except Exception, e:
         print "Got an exception while indexing page: %s\nWill exit." % processed_url
         print "Headings: %s" % headings
+        print "Unvisited urls: %s" % scheduled
         raise
 
     finally:
