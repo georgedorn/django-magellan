@@ -18,6 +18,9 @@ class UnfetchableURLException(Exception):
 class OffsiteLinkException(Exception):
     pass
 
+class CannotHandleUrlException(Exception):
+    pass
+
 
 class memoize(object):
     """Decorator that caches a function's return value each time it is called.
@@ -163,6 +166,7 @@ class SpiderThread(threading.Thread):
         self.source_url = spider_profile.base_url
         self.timeout = spider_profile.timeout
         self.profile = spider_profile
+        self.extractor_class = self.profile.get_extractor_class()
         self.headers = {}
         self.cookiejar = cookielib.CookieJar()
         self.opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.cookiejar))
@@ -204,7 +208,7 @@ class SpiderThread(threading.Thread):
                 crawl_start = time.time()
                 headers, content, urls = self.crawl(self.source_url, url, self.timeout)
                 response_time = time.time() - crawl_start
-            except (UnfetchableURLException, OffsiteLinkException, AttributeError):
+            except (UnfetchableURLException, OffsiteLinkException, AttributeError, CannotHandleUrlException):
                 pass
             else:
                 if self.profile.logged_out_string and self.profile.logged_out_string in force_unicode(content, errors='ignore'):
@@ -245,6 +249,9 @@ class SpiderThread(threading.Thread):
         try:
             if log:
                 print "Going to url: %s" % url
+            if not self.extractor_class.can_handle_url(url):
+                raise CannotHandleUrlException
+        
             response = self.fetch_url(url, timeout)
             headers_raw = response.info().headers
             headers = {}
@@ -256,8 +263,6 @@ class SpiderThread(threading.Thread):
             raise UnfetchableURLException
         except urllib2.URLError:
             raise UnfetchableURLException # should be other error
-        except httplib2.ServerNotFoundError:
-            raise UnfetchableURLException
         
         if is_on_site(source_url, response.geturl()):
             urls = get_urls(content)
