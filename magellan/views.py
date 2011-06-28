@@ -25,6 +25,11 @@ def search(request):
         search_form = SearchForm(request.GET)
         query = search_form['query'].value().replace('+', ' AND ').replace(' -', ' NOT ')
         
+        profile_ids = search_form['profiles'].value()
+        if profile_ids and len(profile_ids) != len(search_form['profiles'].field.choices):
+            profiles = SpiderProfile.objects.filter(active=True).filter(pk__in=profile_ids)
+            query = "(%s) AND (%s)" % (query, ' OR '.join(['site:%s' % p.name for p in profiles] ))
+        
         page_index = WhooshPageIndex()
         start_time = datetime.now()
         results = page_index.search(query, pagenum=page, pagelen=100)
