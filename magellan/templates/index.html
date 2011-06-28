@@ -15,15 +15,7 @@
   <body>
     <div id="search_container" class="logo_bg">
         <div id="search_ui">
-            <form action="" method="get" name="search_form" class="search_form">
-                <input class="text_box" name="q" type="text" value="{{query}}" />
-                <input class="button" type="Submit" value="Go >" />
-                <ul class="search_profiles">
-                    {% for profile in profiles %}
-                    <li><input type="checkbox" name="profile" value="{{profile.name}}" checked="checked"> {{profile.name}}</li>
-                    {% endfor %}
-                </ul>
-            </form>
+        {% include "search_form.html" %}
         </div> <!-- search_ui -->
     </div> <!-- search_container -->
     

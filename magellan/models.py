@@ -135,7 +135,7 @@ class WhooshPageIndex(object):
         qry = parser.parse(query)
         search = self.ix.searcher()
 #        with self.ix.searcher() as searcher:
-        return search.search(qry, *args, **kwargs)
+        return search.search_page(qry, *args, **kwargs)
             
 
         

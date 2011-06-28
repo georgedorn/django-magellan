@@ -15,19 +15,11 @@
   <body>
     <div id="results_search_container" class="logo_bg">
         <div id="search_ui">
-            <form action="" method="get" name="search_form" class="search_form">
-                <input class="text_box" name="q" type="text" value="{{query}}" />
-                <input class="button" type="Submit" value="Go >" />
-                <ul class="search_profiles">
-                    {% for profile in profiles %}
-                    <li><input type="checkbox" name="profile" value="{{profile.name}}" checked="checked"> {{profile.name}}</li>
-                    {% endfor %}
-                </ul>
-            </form>
+            {% include "search_form.html" %}
         </div> <!-- search_ui -->
     </div> <!-- search_container -->
     
-    <p class="results_stats">Found {{num_results}} links in XX seconds. Showing page 1 of XX.</p>
+    <p class="results_stats">Found {{num_results}} links in {{query_time}} seconds. Showing page {{page}} of {{pagecount}}.</p>
 
     <ol id="results_list">
     	<!-- <span class="search_term">blah</span> will highlight words here -->
@@ -59,15 +51,7 @@
     </ol>
     
     <div id="search_ui_bottom">
-    	<form action="" method="get" name="search_form" class="search_form">
-            <input class="text_box" name="q" type="text" value="{{query}}" />
-            <input class="button" type="Submit" value="Go >" />
-            <ul class="search_profiles">
-            	{% for profile in profiles %}
-                <li><input type="checkbox" name="profile" value="{{profile.name}}" checked="checked"> {{profile.name}}</li>
-                {% endfor %}
-            </ul>
-        </form>
+    	{% include "search_form.html" %}
     </div> <!-- search_ui_bottom -->
     
     <ul id="tech_bugs">
