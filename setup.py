@@ -9,6 +9,7 @@ setup(
                         'Django>=1.3',
                         'Whoosh>=1.8.2',
                         'chardet>=1.0.1',
+                        'httplib2>=0.7.1'
                         ],
  
       include_package_data = True,
