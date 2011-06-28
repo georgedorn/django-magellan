@@ -1,7 +1,7 @@
 <form action="" method="get" name="search_form" class="search_form">
     {{ search_form.non_field_errors }}
     {{search_form.query}} {{search_form.query.errors}}
+    <input type="submit" value="Go >" />
     
     {{search_form.profiles}} {{search_form.profiles.errors}}
-    <input type="submit" value="Go" />
 </form>

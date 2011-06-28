@@ -29,20 +29,20 @@ body {
     text-align: center;
 }
 
-.search_form .text_box {
+.search_form input[type=text] {
     border: 1px solid black;
     font-size: 20px;
     width: 265px;
     height: 26px;
 }
 
-.search_form .button {
+.search_form input[type=submit] {
     position: relative;
     top: -2px;
     font-size: 20px;
 }
 
-.search_form ul.search_profiles {
+.search_form li {
     display: inline;
     list-style-type: none;	
 }
