@@ -12,7 +12,8 @@ Some parts of spider were extracted from the django-spider project, forked from 
 Installation:
 1. Create your search engine project in django.
 2. Install magellan via your favorite package installer.
-3. Add magellan to your INSTALLED_APPS.
+3. Add 'magellan' to your INSTALLED_APPS.  If you are not overriding the search_results.html template, also add 'pagination' to INSTALLED_APPS and 'pagination.middleware.PaginationMiddleware' to MIDDLEWARE_CLASSES.
+
 4. Configure your database (sqlite will work fine, if desired.)
 5. In settings.py, configure:
     MAGELLAN_PLUGINS_MODULE_PATH = "searchengine.plugins" 
