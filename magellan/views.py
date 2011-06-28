@@ -21,7 +21,7 @@ def search(request):
     vars = {}
     if request.GET.get('query'):
         #form was submitted
-        page = request.GET.get('page', 1)
+        page = int(request.GET.get('page', 1))
         search_form = SearchForm(request.GET)
         query = search_form['query'].value().replace('+', ' AND ').replace(' -', ' NOT ')
         
@@ -34,6 +34,7 @@ def search(request):
         vars['page'] = page
         vars['pagecount'] = results.pagecount
         vars['results'] = [ dict(title=r['title'], highlight=r.highlights('content'), url=r['url']) for r in results]
+        vars['pagination_results'] = range(1, len(results))
         vars['num_results'] = len(results)
         template = 'search_results.html'
     else:

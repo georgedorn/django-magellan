@@ -1,3 +1,6 @@
+{% load pagination_tags %}
+{% autopaginate pagination_results 100 %}
+
 <!DOCTYPE html 
      PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -19,6 +22,8 @@
         </div> <!-- search_ui -->
     </div> <!-- search_container -->
     
+    
+    
     <p class="results_stats">Found {{num_results}} links in {{query_time}} seconds. Showing page {{page}} of {{pagecount}}.</p>
 
     <ol id="results_list">
@@ -34,22 +39,9 @@
         {% endfor %}
     </ol> <!-- results_list -->
         
-    <ol class="pagination">
-        <li><a href="#">1</a></li>
-        <li><a href="#">2</a></li>
-        <li><a href="#">3</a></li>
-        <li><a href="#">4</a></li>
-        <li><a href="#">5</a></li>
-        <li><a href="#">..</a></li>
-        <li><a href="#">18</a></li>
-        <li><a href="#">..</a></li>
-        <li><a href="#">33</a></li>
-        <li><a href="#">..</a></li>
-        <li><a href="#">49</a></li>
-        <li><a href="#">..</a></li>
-        <li><a href="#">66</a></li>
-    </ol>
-    
+        
+    {% paginate %}
+
     <div id="search_ui_bottom">
     	{% include "search_form.html" %}
     </div> <!-- search_ui_bottom -->
