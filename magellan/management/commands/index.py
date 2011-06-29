@@ -1,13 +1,9 @@
-from django.core.management.base import BaseCommand, CommandError
-from django.utils.html import strip_tags
+from django.core.management.base import BaseCommand
 from magellan.models import WhooshPageIndex, SpiderProfile
 import Queue
-import urllib, urllib2
 import BeautifulSoup
 import threading
-import time
-from magellan.utils import UnfetchableURLException, OffsiteLinkException,\
-    SpiderThread
+from magellan.utils import SpiderThread
 
 from django.conf import settings
 
@@ -41,7 +37,7 @@ def spider(profile, log=True):
     
     thread_count = profile.threads or getattr(settings, 'SPIDER_THREADS', 4)
     
-    threads = [SpiderThread(pending_urls, processed_responses, finished, profile) for x in range(thread_count)]
+    threads = [SpiderThread(pending_urls, processed_responses, finished, profile) for _ in range(thread_count)]
     
     pending_urls.put((profile.base_url, '', depth))
     scheduled.add(profile.base_url)
@@ -78,11 +74,11 @@ def spider(profile, log=True):
                     if log:
                         print "Skipping page at url: %s, no means of extracting content" % processed_url
                     continue #don't index
-                if log:
-                    print "Adding page at url: %s, content length: %s to index" % (processed_url, len(result_dict['content']))
                 title = e.get_title()
                 content = e.get_content()
                 headings = e.get_headings()
+                if log:
+                    print "Adding page at url: %s, content length: %s to index" % (processed_url, len(content))
                 
                 
                 indexer.add_page(url=processed_url, title=title, content=content, site=profile.name, headings=headings)

@@ -1,4 +1,4 @@
-import urllib2, httplib2
+import urllib2
 from BeautifulSoup import BeautifulSoup, SoupStrainer
 import Queue
 import re
@@ -249,7 +249,7 @@ class SpiderThread(threading.Thread):
         try:
             if log:
                 print "Going to url: %s" % url
-            if not self.extractor_class.can_handle_url(url):
+            if not self.extractor_class.can_handle_url(url, self.opener):
                 raise CannotHandleUrlException
         
             response = self.fetch_url(url, timeout)

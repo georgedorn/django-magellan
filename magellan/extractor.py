@@ -35,7 +35,7 @@ class BaseExtractor(object):
                 self.soup = BeautifulSoup.BeautifulSoup(self.content)
                 self._strip_script()
                 self._strip_style()
-                self._strip_doctype()
+                self._strip_doctype_and_comments()
                 self.content_type = 'html'
             except UnicodeEncodeError:
                 self.soup = None
@@ -44,7 +44,7 @@ class BaseExtractor(object):
             self.content_type = 'raw_ascii'
                 
     @staticmethod
-    def can_handle_url(url):
+    def can_handle_url(url, opener):
         """
         Method to determine whether a given url can be handled by this extractor.
         Can make deductions based on the url itself, or can use the url opener to examine headers.
@@ -92,6 +92,8 @@ class BaseExtractor(object):
         for item in to_extract:
             item.extract()
 
+    
+
     def _strip_style(self):
         to_extract = self.soup.findAll('style')
         for item in to_extract:
@@ -100,10 +102,29 @@ class BaseExtractor(object):
     def _strip_whitespace(self, content):
         return re.sub('\s+', ' ', content)
     
-    def _strip_doctype(self):
+    def _strip_doctype_and_comments(self):
+        comments = self.soup.findAll(text=lambda text:isinstance(text, BeautifulSoup.Comment))
+        [comment.extract() for comment in comments] 
         for child in self.soup.contents:
             if isinstance(child, BeautifulSoup.Declaration):
                 if child.string.lower().startswith('doctype'):
                     child.extract()
-#                    self.soup.contents.remove(child)
+                    
+                    
+    def strip_by_ids(self, ids):
+        """Removes elements from the soup that match any id in the provided list"""
+        ids_string = '(%s)' % '|'.join(ids)
+        ids_regex = re.compile(ids_string)
+        
+        elements = self.soup.findAll(id=ids_regex)
+        [e.extract() for e in elements]
+
+    def strip_by_classes(self, classes):
+        """Removes elements from the soup that match any id in the provided list"""
+        classes_string = '(%s)' % '|'.join(classes)
+        classes_regex = re.compile(classes_string)
+        
+        elements = self.soup.findAll(attrs={'class':classes_regex})
+        [e.extract() for e in elements]
+
         
