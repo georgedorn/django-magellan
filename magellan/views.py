@@ -13,6 +13,7 @@ class SearchForm(forms.Form):
         profiles = SpiderProfile.objects.filter(active=True)
         profile_choices = [(p.pk, p.name) for p in profiles]
         self.base_fields['profiles'].choices = profile_choices
+        self.base_fields['profiles'].initial = [p[0] for p in profile_choices]
         super(SearchForm, self).__init__(*args, **kwargs)
         
 
@@ -34,7 +35,7 @@ def search(request):
         start_time = datetime.now()
         results = page_index.search(query, pagenum=page, pagelen=100)
         query_time = datetime.now() - start_time
-        query_time_formatted = float(query_time.seconds) + float(query_time.microseconds)/1000.0 
+        query_time_formatted = float(query_time.seconds) + float(query_time.microseconds)/1000000.0 
         vars['query_time'] = query_time_formatted
         vars['page'] = page
         vars['pagecount'] = results.pagecount

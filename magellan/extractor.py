@@ -21,12 +21,12 @@ class BaseExtractor(object):
 
         if content.startswith("%PDF"):
             if PdfFileReader is not None:
-                self.content_type = 'pdf'
                 sio = StringIO.StringIO(content)
                 try:
                     self.reader = PdfFileReader(sio)
                     self.content = ' '.join([page.extractText() for page in self.reader.pages])
-                except (AssertionError, TypeError): #pyPdf's exceptions are not awesome.
+                    self.content_type = 'pdf'
+                except Exception: #pyPdf's exceptions are not awesome.
                     self.reader = None
                     self.content = content
                     
@@ -39,6 +39,9 @@ class BaseExtractor(object):
                 self.content_type = 'html'
             except UnicodeEncodeError:
                 self.soup = None
+
+        if not self.content_type:
+            self.content_type = 'raw_ascii'
                 
     @staticmethod
     def can_handle_url(url):
@@ -60,7 +63,7 @@ class BaseExtractor(object):
             title = self.soup.html.head.title.string
         except:
             title = "No Title"
-        return title or "No Title"
+        return title
     
     def get_content(self):
         if self.content_type == 'html' and self.soup:

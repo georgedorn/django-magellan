@@ -8,7 +8,7 @@
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js" type="text/javascript"></script>
     <script type="text/javascript">
         $(document).ready(function () {
-            $('#search_form .text_box').focus();
+            $('#id_query').first().focus();
         });
     </script>
   </head>
@@ -19,10 +19,6 @@
         </div> <!-- search_ui -->
     </div> <!-- search_container -->
     
-    <ul id="tech_bugs">
-        <li><a href="https://bitbucket.org/mchaput/whoosh/wiki/Home"><img alt="Whoosh!" src="{{STATIC_URL}}whoosh.png" width="80" height="28" /></a></li>
-        <li><a href="http://www.djangoproject.com/"><img alt="Django" src="{{STATIC_URL}}django.png" width="80" height="28" /></a></li>
-        <li><a href="http://www.python.org/"><img alt="Python" src="{{STATIC_URL}}python.png" width="80" height="25" /></a></li>
-    </ul> <!-- tech_bugs -->
+    {% include "search_footer.html" %}
   </body>
 </html>

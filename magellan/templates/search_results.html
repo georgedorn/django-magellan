@@ -11,7 +11,7 @@
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js" type="text/javascript"></script>
     <script type="text/javascript">
         $(document).ready(function () {
-            $('.search_form .text_box').first().focus();
+            $('#id_query').first().focus();
         });
     </script>
   </head>
@@ -34,7 +34,7 @@
             <p class="result_excerpt">
             	{% autoescape off %}{{hit.highlight}}{% endautoescape %}
             </p>
-            <p class="result_link"><a href="{{ hit.url }}">{{ hit.url }}</a> - XXK - Indexed 1 Jan 1980</p>
+            <p class="result_link"><a href="{{ hit.url }}">{{ hit.url }}</a></p>
         </li>
         {% endfor %}
     </ol> <!-- results_list -->
@@ -45,11 +45,8 @@
     <div id="search_ui_bottom">
     	{% include "search_form.html" %}
     </div> <!-- search_ui_bottom -->
+
+    {% include "search_footer.html" %}
     
-    <ul id="tech_bugs">
-        <li><a href="https://bitbucket.org/mchaput/whoosh/wiki/Home"><img alt="Whoosh!" src="{{STATIC_URL}}whoosh.png" width="80" height="28" /></a></li>
-        <li><a href="http://www.djangoproject.com/"><img alt="Django" src="{{STATIC_URL}}django.png" width="80" height="28" /></a></li>
-        <li><a href="http://www.python.org/"><img alt="Python" src="{{STATIC_URL}}python.png" width="80" height="25" /></a></li>
-    </ul> <!-- tech_bugs -->
   </body>
 </html>

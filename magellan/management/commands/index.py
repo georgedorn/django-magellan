@@ -69,13 +69,17 @@ def spider(profile, log=True):
             else:
                 # save the result
                 processed_url = result_dict['url']
-                if log:
-                    print "Adding page at url: %s, content length: %s to index" % (processed_url, len(result_dict['content']))
                 
                 raw_content = result_dict['content']
                 unicode_content = BeautifulSoup.UnicodeDammit(raw_content, isHTML=True).unicode
                 
                 e = extractor(unicode_content)
+                if e.content_type == 'raw_ascii' and not getattr(settings, 'MAGELLAN_INDEX_RAW_ASCII', False):
+                    if log:
+                        print "Skipping page at url: %s, no means of extracting content" % processed_url
+                    continue #don't index
+                if log:
+                    print "Adding page at url: %s, content length: %s to index" % (processed_url, len(result_dict['content']))
                 title = e.get_title()
                 content = e.get_content()
                 headings = e.get_headings()
