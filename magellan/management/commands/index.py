@@ -99,8 +99,6 @@ def spider(profile, log=True):
         pass
     except Exception, e:
         print "Got an exception while indexing page: %s\nWill exit." % processed_url
-        print "Headings: %s" % headings
-        print "Unvisited urls: %s" % scheduled
         raise
 
     finally:
@@ -108,8 +106,9 @@ def spider(profile, log=True):
         print "Cleaning up..."
         finished.set()
         [t.join() for t in threads]
-        print "Optimizing index..."
-        indexer.commit(optimize=True)
+        if len(visited) > 0:
+            print "Optimizing index..."
+            indexer.commit(optimize=True)
     
     return visited
 
