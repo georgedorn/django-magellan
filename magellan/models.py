@@ -84,6 +84,10 @@ class WhooshPageIndex(object):
         self.ix = index.open_dir(settings.MAGELLAN_WHOOSH_INDEX)
     
     def commit(self, *args, **kwargs):
+        if self.optimize_count > self.optimize_size:
+            print "Optimizing index..."
+            kwargs['optimize'] = True
+            self.optimize_count = 0
         self.writer.commit(*args, **kwargs)
         self.batch_count = 0
         self._unique_data = defaultdict(list)
@@ -96,13 +100,15 @@ class WhooshPageIndex(object):
         self._writer = self.ix.writer(limitmb=memory)
         return self._writer
     
-    def __init__(self, batch_size=20):
+    def __init__(self, batch_size=20, optimize_size=1000):
         if os.path.exists(settings.MAGELLAN_WHOOSH_INDEX):
             self.open_index()
         else:
             self.create_index()
         self.batch_size = batch_size
         self.batch_count = 0
+        self.optimize_count = 0
+        self.optimize_size = optimize_size
             
     def add_page(self, url, title, content, site, headings='', commit=False):
         """
@@ -125,6 +131,7 @@ class WhooshPageIndex(object):
                                                           content_hash=force_unicode(hash),
                                                           headings=force_unicode(headings))
         self.batch_count += 1
+        self.optimize_count += 1
         if commit or self.batch_count >= self.batch_size:
             self.commit()
             
