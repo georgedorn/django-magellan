@@ -117,15 +117,18 @@ def strip_subdomain(url):
 def is_on_site(source_url, url, domain_substring=None):
     if url.startswith('/'):
         return True
-
-    if domain_substring and domain_substring not in url:
-        return False
-
+    
+    
     if '://' not in url:
         if url.startswith('mailto') or url.startswith('javascript'):
             return False
         return True
 
+    if domain_substring and domain_substring not in url:
+        print "%s is not in %s" % (domain_substring, url)
+        return False
+
+    
     source_domain = get_domain(source_url)
     if not source_domain:
         raise ValueError('%s must contain "protocol://host"' % source_url)
