@@ -176,11 +176,17 @@ class SpiderThread(threading.Thread):
 
         self.working = False
     
+    def wait_for_indexer(self):
+        while len(self.response_queue) > 50:
+            time.sleep(5)
+    
     def run(self):
         if self.profile.login_url:
             self.login()
         
         while not self.finish_event.is_set():
+            if len(self.response_queue) > 100:
+                self.wait_for_indexer()
             self.process_queue()
             if self.profile.delay:
                 time.sleep(self.profile.delay)
