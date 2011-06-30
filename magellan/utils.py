@@ -125,7 +125,6 @@ def is_on_site(source_url, url, domain_substring=None):
         return True
 
     if domain_substring and domain_substring not in url:
-        print "%s is not in %s" % (domain_substring, url)
         return False
 
     
