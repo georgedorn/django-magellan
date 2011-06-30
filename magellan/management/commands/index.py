@@ -29,7 +29,7 @@ def spider(profile, log=True):
     depth = profile.depth
     indexer = WhooshPageIndex()
     pending_urls = Queue.Queue()
-    processed_responses = Queue.Queue()
+    processed_responses = Queue.Queue(maxsize=500)
     finished = threading.Event()
     
     visited = {}
