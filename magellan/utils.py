@@ -1,4 +1,4 @@
-import urllib2
+import urllib2, httplib
 from BeautifulSoup import BeautifulSoup, SoupStrainer
 import Queue
 import re
@@ -210,7 +210,7 @@ class SpiderThread(threading.Thread):
                 crawl_start = time.time()
                 headers, content, urls = self.crawl(self.source_url, url, self.timeout)
                 response_time = time.time() - crawl_start
-            except (UnfetchableURLException, OffsiteLinkException, AttributeError, CannotHandleUrlException):
+            except (UnfetchableURLException, OffsiteLinkException, AttributeError, CannotHandleUrlException, httplib.BadStatusLine):
                 pass
             else:
                 if self.profile.logged_out_string and self.profile.logged_out_string in force_unicode(content, errors='ignore'):
