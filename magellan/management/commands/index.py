@@ -29,7 +29,7 @@ def spider(profile, log=True):
     depth = profile.depth
     indexer = WhooshPageIndex()
     pending_urls = Queue.Queue()
-    processed_responses = Queue.Queue(maxsize=500)
+    processed_responses = Queue.Queue(maxsize=50)
     finished = threading.Event()
     
     visited = {}
@@ -106,9 +106,10 @@ def spider(profile, log=True):
         print "Cleaning up..."
         finished.set()
         [t.join() for t in threads]
-        if len(visited) > 0:
-            print "Optimizing index..."
-            indexer.commit(optimize=True)
+        if 'optimize' in sys.argv:
+            if len(visited) > 0:
+                print "Optimizing index..."
+                indexer.commit(optimize=True)
     
     return visited
 
