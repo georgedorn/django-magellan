@@ -27,8 +27,12 @@ Installation
 
 #. Run your django server (manage.py runserver or however you deploy this)
 #. In django's admin, configure one or more SearchProfile objects.
-#. Invoke the spider via manage.py index (which can take the name of a profile as an argument)
-#. Hook up the magellan search result view in your urls.py. (This will become an include eventually.)::
+#. Invoke the spider::
+
+    python manage.py index
+    python manage.py index MyProfile #to only index one profile
+
+#. Magellan provides an optional view and template.  Hook up the magellan search result view in your urls.py. (This will become an include eventually.)::
     
     url(r'^search/', 'magellan.views.search'),
 
