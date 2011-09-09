@@ -33,9 +33,9 @@ class BaseExtractor(object):
         if not self.content_type:      
             try:
                 self.soup = BeautifulSoup.BeautifulSoup(self.content)
-                self._strip_script()
-                self._strip_style()
-                self._strip_doctype_and_comments()
+                self.strip_script()
+                self.strip_style()
+                self.strip_doctype_and_comments()
                 self.content_type = 'html'
             except UnicodeEncodeError:
                 self.soup = None
@@ -46,13 +46,18 @@ class BaseExtractor(object):
     @staticmethod
     def can_handle_url(url, opener):
         """
-        Method to determine whether a given url can be handled by this extractor.
+        Determines whether a given url can be handled by this extractor.
         Can make deductions based on the url itself, or can use the url opener to examine headers.
         """
         return True
             
     
     def get_title(self):
+        """
+        Returns the title from the document's content.
+        Override to trim title or otherwise mutate the title.
+        Used by the indexer when adding documents to the search index.
+        """
         if self.content_type == 'pdf':
             try:
                 return self.reader.documentInfo['/Title']
@@ -66,19 +71,30 @@ class BaseExtractor(object):
         return title
     
     def get_content(self):
+        """
+        Returns the content of the document in a format suitable
+        for indexing.  By default, strips html tags extra whitespace.
+        Override to strip out more superfluous content, such as sidebars, headers,
+        footers, etc.
+        """
         if self.content_type == 'html' and self.soup:
             content = strip_tags(self.soup.getText(separator=' '))
         elif self.content_type == 'pdf':
-            return self._strip_whitespace(self.content)
+            return self.strip_whitespace(self.content)
         else:
             #this is incredibly brutal.  
             #we should try much harder to handle crazy weird content (e.g. PDFs)
             #before descending to these depths of barbarism
             content = strip_tags(ascii_hammer(self.content))
 
-        return self._strip_whitespace(content)
+        return self.strip_whitespace(content)
     
     def get_headings(self):
+        """
+        Headings are indexed an additional time from normal content, 
+        as these are likely important clues to the document's content.
+        Override if headings are not just h1, h2 or h3 tags.
+        """
         if not self.soup:
             return ''
         headings = []
@@ -87,22 +103,34 @@ class BaseExtractor(object):
             headings.extend(hs)
         return ' '.join(headings)
     
-    def _strip_script(self):
+    def strip_script(self):
+        """
+        Removes all script tags from html content.
+        """
         to_extract = self.soup.findAll('script')
         for item in to_extract:
             item.extract()
 
     
 
-    def _strip_style(self):
+    def strip_style(self):
+        """
+        Removes all style tags from html content.
+        """
         to_extract = self.soup.findAll('style')
         for item in to_extract:
             item.extract()
 
-    def _strip_whitespace(self, content):
+    def strip_whitespace(self, content):
+        """
+        Returns content with duplicate whitespace converted to single spaces.
+        """
         return re.sub('\s+', ' ', content)
     
-    def _strip_doctype_and_comments(self):
+    def strip_doctype_and_comments(self):
+        """
+        Removes doctype and HTML comments from HTML content.
+        """
         comments = self.soup.findAll(text=lambda text:isinstance(text, BeautifulSoup.Comment))
         [comment.extract() for comment in comments] 
         for child in self.soup.contents:
@@ -112,7 +140,10 @@ class BaseExtractor(object):
                     
                     
     def strip_by_ids(self, ids):
-        """Removes elements from the soup that match any id in the provided list"""
+        """
+        A helper method for trimming content.
+        Removes elements from the HTML content that match any id in the provided list
+        """
         ids_string = '(%s)' % '|'.join(ids)
         ids_regex = re.compile(ids_string)
         
@@ -120,7 +151,10 @@ class BaseExtractor(object):
         [e.extract() for e in elements]
 
     def strip_by_classes(self, classes):
-        """Removes elements from the soup that match any id in the provided list"""
+        """
+        A helper method for trimming content.
+        Removes elements from the soup that match any class in the provided list
+        """
         classes_string = '(%s)' % '|'.join(classes)
         classes_regex = re.compile(classes_string)
         

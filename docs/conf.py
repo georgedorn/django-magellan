@@ -11,7 +11,15 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
+
+
 import sys, os
+path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, path)
+from example import settings
+from django.core.management import setup_environ
+setup_environ(settings)
+import magellan
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -40,7 +48,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Django Magellan'
+project = u'Django-Magellan'
 copyright = u'2011, Sam Thompson'
 
 # The version info for the project you're documenting, acts as replacement for
