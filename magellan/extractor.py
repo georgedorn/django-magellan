@@ -111,8 +111,6 @@ class BaseExtractor(object):
         for item in to_extract:
             item.extract()
 
-    
-
     def strip_style(self):
         """
         Removes all style tags from html content.
