@@ -1,0 +1,13 @@
+Magellan is a lightweight search engine with a built-in spider.
+
+For more info, see /docs or http://readthedocs.org/docs/django-magellan/en/latest/.
+
+Dependencies (handled via setup.py):
+
+Django, probably >= 1.2.
+Whoosh.
+Spider makes use of httplib2 and BeautifulSoup.
+Chardet is not required but will improve results greatly.
+
+Some parts of spider were extracted from the django-spider project, forked from https://github.com/coleifer/django-spider.
+
