@@ -6,9 +6,11 @@ import os
 from django.conf import settings
 from django.utils.encoding import force_unicode
 from django.utils import importlib
+from django import forms
 import hashlib
 from collections import defaultdict
 from extractor import BaseExtractor
+
 
 WHOOSH_SCHEMA = fields.Schema(title=fields.TEXT(stored=True),
                                                                content = fields.TEXT(stored=True), #need to store in order to handle highlights
@@ -29,22 +31,24 @@ class SpiderProfile(models.Model):
     active = models.BooleanField(default=True)
     timeout = models.IntegerField(default=30, help_text="Maximum time, per page, to wait for a response")
     login_url = models.CharField(max_length=255, 
-                                                        help_text="URL to POST credentials to; not the login form itself, but the action of the form",
-                                                        blank=True)
+                                 help_text="URL to POST credentials to; not the login form itself, but the action of the form",
+                                 blank=True)
     login_details = models.CharField(max_length=255,
-                                                        help_text="urlencoded data to post to URL; e.g. name=foo&password=bar",
-                                                        blank=True)
+                                     help_text="urlencoded data to post to URL; e.g. name=foo&password=bar",
+                                     blank=True)
     logged_out_string = models.CharField(max_length=255,
-                                                        help_text="String to search for on response page to detect logged out status",
-                                                        blank=True)
-    threads = models.IntegerField(default=1, help_text="How many threads to use when spidering this site")
-    delay = models.IntegerField(default=0, help_text="How long to wait between requests, for each thread")    
+                                         help_text="String to search for on response page to detect logged out status",
+                                         blank=True)
+    threads = models.IntegerField(default=1, 
+                                  help_text="How many threads to use when spidering this site")
+    delay = models.IntegerField(default=0, 
+                                help_text="How long to wait between requests, for each thread")    
     links_ignore_regex = models.CharField(max_length=255,
-                                                        help_text="Links matching this regex will not be followed",
-                                                        blank=True)
+                                          help_text="Links matching this regex will not be followed",
+                                          blank=True)
     extraction_plugin = models.CharField(max_length=255,
-                                                        help_text="Module name containing an implementation of BaseExtractor with same name as module.",
-                                                        blank=True)
+                                         help_text="Module name containing an implementation of BaseExtractor with same name as module.",
+                                         blank=True)
     
     def get_extractor_class(self):
         """
@@ -62,8 +66,16 @@ class SpiderProfile(models.Model):
     def __unicode__(self):
         return u"%s - starting at: %s" % (self.name, self.base_url)
 
+class SpiderProfileAdminForm(forms.ModelForm):
+    class Meta:
+        model = SpiderProfile
+        widgets = {
+                   'login_details': forms.TextInput(attrs={'size': '3'})
+                   }
+
 class SpiderProfileAdmin(admin.ModelAdmin):
-    pass
+    form = SpiderProfileAdminForm
+
 admin.site.register(SpiderProfile, SpiderProfileAdmin)
 
 
