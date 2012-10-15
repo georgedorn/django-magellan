@@ -1,4 +1,8 @@
 from django.conf import settings
+from .base import BaseBackend
+#there's probably a better place for this, but cPickle hits the default 1000 limit when whoosh is trying to append items
+import sys
+sys.setrecursionlimit(100000)
 
 WHOOSH_SCHEMA = fields.Schema(title=fields.TEXT(stored=True),
                                                                content = fields.TEXT(stored=True), #need to store in order to handle highlights
@@ -9,7 +13,7 @@ WHOOSH_SCHEMA = fields.Schema(title=fields.TEXT(stored=True),
                                                                )
 
 
-class WhooshPageIndex(object):
+class WhooshPageIndex(BaseBackend):
     
     _writer = None    
     _unique_data = defaultdict(list) #holds non-committed unique data to detect collisions

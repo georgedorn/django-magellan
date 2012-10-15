@@ -8,8 +8,21 @@ import time
 import functools
 import cookielib
 from django.utils.encoding import force_unicode
+from django.utils import importlib
 
 from django.conf import settings
+
+
+def get_backend(**kwargs):
+    """ 
+    Returns an instance of the backend interface specified in settings.
+    Passes kwargs to the backend's init.
+    """
+    backend_path = settings.MAGELLAN_SEARCH_BACKEND
+    if not backend_path.startswith('magellan.backends.'):
+        backend_path = "magellan.backends.%s" % backend_path
+    backend_class = import_class(backend_path)
+    return backend_class(**kwargs) #todo: snag options from settings and pass them in as kwargs
 
 class UnfetchableURLException(Exception):
     pass
@@ -21,6 +34,22 @@ class OffsiteLinkException(Exception):
 class CannotHandleUrlException(Exception):
     pass
 
+def import_class(path):
+    """
+    Probably a duplicate of some functionality I can't find.
+    Ganked from haystack's code.
+    Given a string denoting a path to a class, return the class itself.
+    """
+    path_bits = path.split('.')
+    # Cut off the class name at the end.
+    class_name = path_bits.pop()
+    module_path = '.'.join(path_bits)
+    module_itself = importlib.import_module(module_path)
+
+    if not hasattr(module_itself, class_name):
+        raise ImportError("The Python module '%s' has no '%s' class." % (module_path, class_name))
+
+    return getattr(module_itself, class_name)
 
 class memoize(object):
     """Decorator that caches a function's return value each time it is called.
@@ -94,18 +123,6 @@ def relative_to_full(example_url, url):
         return '/'.join((domain, url.lstrip('/')))
     
     return url
-
-def get_urls(content):
-    # retrieve all link hrefs from html
-    links = []
-    try:
-        link_soup = BeautifulSoup(content, parseOnlyThese=SoupStrainer('a'))
-    except UnicodeEncodeError:
-        return links
-    for link in link_soup:
-        if link.has_key('href'):
-            links.append(link.get('href'))
-    return links
 
 def strip_subdomain(url):
     match = subdomain_re.search(url)
@@ -267,7 +284,7 @@ class SpiderThread(threading.Thread):
             raise UnfetchableURLException # should be other error
         
         if is_on_site(source_url, response.geturl()):
-            urls = get_urls(content)
+            urls = self.extractor_class.get_urls(content)
             return headers, content, self.filter_urls(url, urls)
         else:
             raise OffsiteLinkException

@@ -17,6 +17,17 @@ class BaseBackend(object):
     def search(self, query, *args, **kwargs):
         """
         Performs a search and returns results.
+
+        Expected format of results:
+        {'pagecount': int,
+         'results': [
+         
+            {'title': string,
+             'highlights': string,
+             'url': string
+            }
+         ]}
+        
         """
         raise NotImplementedError
     

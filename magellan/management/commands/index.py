@@ -1,33 +1,44 @@
 from django.core.management.base import BaseCommand
-from magellan.models import WhooshPageIndex, SpiderProfile
+from magellan.models import SpiderProfile
 import Queue
 import BeautifulSoup
 import threading
-from magellan.utils import SpiderThread
-
-from django.conf import settings
-
-#there's probably a better place for this, but cPickle hits the default 1000 limit when whoosh is trying to append items
+from magellan.utils import SpiderThread, import_class, get_backend
 import sys
-sys.setrecursionlimit(100000)
-
+from django.conf import settings
 
 
 class Command(BaseCommand):
     
     def handle(self, *args, **options):
+        fast = False
+        single_thread = False
+        if 'help' in args:
+            print "manage.py index [profile1 profile2 ...]"
+            print "Extra options:"
+            print "--fast: tell the backend to index quickly, possibly by lifting unique constraints."
+            print "--single-thread: only use one thread to index, regardless of each profile's configuration"
+            return
+        if '--fast' in args:
+            fast = True
+            args.pop('--fast')
+        if '--single-thread' in args:
+            single_thread = True
+            args.pop('--single-thread')
+
         if args:
             profiles = SpiderProfile.objects.filter(name__in=args)
         else:
             profiles = SpiderProfile.objects.filter(active=True)
         
         for profile in profiles:
-            spider(profile)
+            spider(profile, fast=fast, single_thread=single_thread)
+            
 
-
-def spider(profile, log=True):
+def spider(profile, log=True, fast=False, single_thread=False):
     depth = profile.depth
-    indexer = WhooshPageIndex()
+    indexer = get_backend(fast=fast)
+    indexer.create_index(profile.name)
     pending_urls = Queue.Queue()
     processed_responses = Queue.Queue(maxsize=50)
     finished = threading.Event()
@@ -35,8 +46,11 @@ def spider(profile, log=True):
     visited = {}
     scheduled = set()
     
-    thread_count = profile.threads or getattr(settings, 'SPIDER_THREADS', 4)
-    
+    if not single_thread:
+        thread_count = profile.threads or getattr(settings, 'SPIDER_THREADS', 4)
+    else:
+        thread_count = 1
+        
     threads = [SpiderThread(pending_urls, processed_responses, finished, profile) for _ in range(thread_count)]
     
     pending_urls.put((profile.base_url, '', depth))
@@ -106,10 +120,6 @@ def spider(profile, log=True):
         print "Cleaning up..."
         finished.set()
         [t.join() for t in threads]
-        if 'optimize' in sys.argv:
-            if len(visited) > 0:
-                print "Optimizing index..."
-                indexer.commit(optimize=True)
-    
+        indexer.commit() #one last commit to ensure we don't lose the last few items.
     return visited
 

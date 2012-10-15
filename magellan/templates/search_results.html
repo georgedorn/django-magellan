@@ -25,8 +25,9 @@
     
     
     <p class="results_stats">Found {{num_results}} links in {{query_time}} seconds. Showing page {{page}} of {{pagecount}}.</p>
+    {% paginate %}
 
-    <ol id="results_list">
+    <ol id="results_list" start="{{start}}">
     	<!-- <span class="search_term">blah</span> will highlight words here -->
     	{% for hit in results %}
         <li>
@@ -34,6 +35,9 @@
             <p class="result_excerpt">
             	{% autoescape off %}{{hit.highlight}}{% endautoescape %}
             </p>
+	    <p class='result_score'>
+		Score: {{hit.score}}
+	    </p>
             <p class="result_link"><a href="{{ hit.url }}">{{ hit.url }}</a></p>
         </li>
         {% endfor %}

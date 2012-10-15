@@ -42,6 +42,49 @@ class BaseExtractor(object):
 
         if not self.content_type:
             self.content_type = 'raw_ascii'
+    
+    @classmethod        
+    def get_urls(cls, content):
+        # retrieve all link hrefs from html
+        links = []
+        try:
+            link_soup = BeautifulSoup.BeautifulSoup(content, parseOnlyThese=BeautifulSoup.SoupStrainer('a'))
+        except UnicodeEncodeError:
+            return links
+        for link in link_soup:
+            if link.has_key('href'):
+                links.append(link.get('href'))
+        return cls.clean_urls(links)
+
+    @classmethod
+    def clean_urls(cls, urls):
+        fixed_urls = [cls.fix_url(url) for url in urls]
+        fixed_urls = list(set(fixed_urls)) #throw out dupes
+        return fixed_urls
+
+
+    @classmethod
+    def fix_url(cls, url):
+        """
+        Clean up urls with /../ or /./ in them, as well as other minor tweaks.
+        This fixes them, popping off both the .. and the path component above it, and
+        removes . entirely.
+        """
+        regex = r'[^./]+/\.\.\/'
+        new_url, count = re.subn(regex, '', url)
+        while count > 0:
+            new_url, count = re.subn(regex, '', new_url)
+        
+        regex2 = r'/\./'
+        new_url, count = re.subn(regex2, '', new_url)
+        while count > 0:
+            new_url, count = re.subn(regex2, '', new_url)
+
+        new_url = new_url.strip('#!') #remove extra # chars at end of url 
+        
+        return new_url
+
+
                 
     @staticmethod
     def can_handle_url(url, opener):
