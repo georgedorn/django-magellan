@@ -10,6 +10,8 @@ setup(
                         'Whoosh>=1.8.2',
                         'chardet>=1.0.1',
                         'django-pagination>=1.0.7',
+                        'pyelasticsearch>=0.2',
+                        'requests>=0.14.1',
                         ],
  
       include_package_data = True,
