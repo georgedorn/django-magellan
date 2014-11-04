@@ -40,5 +40,14 @@ class BaseContentSubscription(models.Model):
         raise NotImplementedError
 
 
+#Helpful generic exceptions to inherit from.
+class ContentDoesNotExist(Exception):
+    pass
+
+
+class ContentUnavailable(Exception):
+    pass
+
 #import models here
 from .generic import GenericWebsiteSubscription
+from .tumblr import TumblrSubscription

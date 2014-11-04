@@ -3,3 +3,4 @@ Django<1.8
 django-pagination<1.1
 pyelasticsearch<0.8
 requests<2.5
+PyTumblr==0.0.6
