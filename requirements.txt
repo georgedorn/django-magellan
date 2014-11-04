@@ -1,0 +1,5 @@
+BeautifulSoup<3.3
+Django<1.8
+django-pagination<1.1
+pyelasticsearch<0.8
+requests<2.5
